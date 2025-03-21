@@ -5,40 +5,83 @@ from datetime import datetime, timedelta
 from dotenv import dotenv_values, set_key
 
 def save_keys_to_env(email, public_key, private_key, zip_name, password_hash, iv_hash_order):
-    # Crear la estructura de datos
+    """
+    Guarda las llaves y metadatos en el archivo .env en el formato correcto.
+    """
+    # Crear la nueva entrada
+    expiration_keys = (datetime.now() + timedelta(days=1)).isoformat()
+    expiration_file = (datetime.now() + timedelta(days=7)).isoformat()
+
     new_entry = {
-        "email": email,
-        "keys": [{
-            "public_key": public_key,
-            "private_key": private_key,
-            "file_encript": {
-                "hash_password_zip": password_hash,
-                "zip_name": zip_name,
-                "iv_hash_order": iv_hash_order,
-                "expiration_file": (datetime.now() + timedelta(days=1)).isoformat()
-            },
-            "expiration_keys": (datetime.now() + timedelta(days=1)).isoformat()
-        }]
+        "public_key": public_key,
+        "private_key": private_key,
+        "file_encript": {
+            "zip_name": zip_name,  # Usamos zip_name en lugar de zip
+            "hash_password_zip": password_hash,
+            "iv_hash_order": iv_hash_order,
+            "expiration_file": expiration_file
+        },
+        "expiration_keys": expiration_keys
     }
 
     # Leer el archivo .env
-    env_vars = dotenv_values(".env")
-    temporary_keys_str = env_vars.get("TEMPORARY_KEYS", "[]")
-
-    # Convertir TEMPORARY_KEYS a una lista de Python
+    env_path = ".env"
     try:
-        temporary_keys = json.loads(temporary_keys_str)
-    except json.JSONDecodeError:
-        temporary_keys = []
+        with open(env_path, "r") as file:
+            lines = file.readlines()
+    except FileNotFoundError:
+        # Si el archivo .env no existe, crearlo
+        lines = []
 
-    # Agregar la nueva entrada
-    temporary_keys.append(new_entry)
+    # Buscar la línea que contiene TEMPORARY_KEYS
+    temporary_keys_line = None
+    for i, line in enumerate(lines):
+        if line.startswith("TEMPORARY_KEYS="):
+            temporary_keys_line = i
+            break
 
-    # Convertir la lista actualizada a una cadena JSON
-    updated_temporary_keys_str = json.dumps(temporary_keys)
+    # Actualizar TEMPORARY_KEYS
+    if temporary_keys_line is not None:
+        # Cargar los datos existentes
+        try:
+            existing_data = json.loads(lines[temporary_keys_line].split("=", 1)[1].strip().strip("'"))
+        except json.JSONDecodeError:
+            # Si hay un error al decodificar, inicializar con una lista vacía
+            existing_data = []
 
-    # Actualizar la variable TEMPORARY_KEYS en el archivo .env
-    set_key(".env", "TEMPORARY_KEYS", updated_temporary_keys_str)
+        # Buscar si ya existe una entrada para el correo
+        email_entry = None
+        for entry in existing_data:
+            if entry["email"] == email:
+                email_entry = entry
+                break
+
+        if email_entry:
+            # Si ya existe una entrada para el correo, agregar la nueva clave
+            email_entry["keys"].append(new_entry)
+        else:
+            # Si no existe una entrada para el correo, crear una nueva
+            email_entry = {
+                "email": email,
+                "keys": [new_entry]
+            }
+            existing_data.append(email_entry)
+
+        # Actualizar la línea TEMPORARY_KEYS
+        lines[temporary_keys_line] = f"TEMPORARY_KEYS='{json.dumps(existing_data)}'\n"
+    else:
+        # Si no existe TEMPORARY_KEYS, crear una nueva línea
+        email_entry = {
+            "email": email,
+            "keys": [new_entry]
+        }
+        lines.append(f"TEMPORARY_KEYS='{json.dumps([email_entry])}'\n")
+
+    # Escribir los cambios en el archivo .env
+    with open(env_path, "w") as file:
+        file.writelines(lines)
+
+    print("Datos actualizados en el archivo .env.")
 
 def generate_keys(email):
     # Generar par de claves RSA
