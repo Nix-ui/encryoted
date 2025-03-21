@@ -16,8 +16,8 @@ from env_manager import get_private_key_from_env
 def main():
     # Datos de entrada
     email = input("Ingrese el correo del destinatario: ")
-    file_path = input("Ingrese la ruta del archivo PDF a cifrar: ")
-
+    file_path = input("Ingrese la ruta del archivo  a cifrar: ")
+    outputh_name = input("Ingrese la ruta del archivo  encriptado: ")
     # Verificar si el correo está en la whitelist
     if not is_email_in_whitelist(email):
         print("Error: El correo no está en la whitelist.")
@@ -27,7 +27,7 @@ def main():
     public_key, private_key = generate_keys(email)
 
     # Cifrar el archivo
-    encrypted_file, iv_hash_order = encrypt_file(file_path, public_key)
+    encrypted_file, iv_hash_order = encrypt_file(file_path, public_key, outputh_name)
 
     # Generar contraseña para el ZIP
     password_hash = generate_password_hash(email, os.path.basename(file_path))

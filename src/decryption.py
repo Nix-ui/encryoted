@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import zipfile
+import pathlib
 from env_manager import get_private_key_from_env,get_zip_password_from_env,remove_expired_keys
 
 def decrypt_file(encrypted_file, private_key,output_file):
@@ -20,7 +21,8 @@ def decrypt_file(encrypted_file, private_key,output_file):
     data = cipher_aes.decrypt_and_verify(ciphertext, tag)
 
     # Guardar el archivo descifrado
-    decrypted_file = encrypted_file.replace('.enc', output_file)
+    file_extension = pathlib.Path(encrypted_file).suffix
+    decrypted_file = encrypted_file.replace(file_extension, output_file)
     with open(decrypted_file, 'wb') as f:
         f.write(data)
     return decrypted_file
