@@ -1,9 +1,10 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import zipfile
-from env_manager import get_private_key_from_env,get_zip_password_from_env
+from env_manager import get_private_key_from_env,get_zip_password_from_env,remove_expired_keys
 
 def decrypt_file(encrypted_file, private_key,output_file):
+    remove_expired_keys()
     with open(encrypted_file, 'rb') as f:
         enc_session_key = f.read(256)  # Tamaño de la clave RSA
         nonce = f.read(16)

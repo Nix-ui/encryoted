@@ -39,7 +39,7 @@ def main():
     send_email(email, zip_name)
 
     # Guardar las claves y metadatos en el archivo .env
-    save_keys_to_env(email, public_key, private_key, zip_name, password_hash, iv_hash_order)
+    save_keys_to_env(email, public_key, private_key, zip_name, password_hash, iv_hash_order,60)
 
     # Registrar la acción en los logs
     log_action(email, zip_name, os.getenv("SENDER_EMAIL"))

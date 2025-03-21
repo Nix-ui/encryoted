@@ -1,10 +1,12 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
+from env_manager import remove_expired_keys
 import os
 
 def encrypt_file(file_path, public_key):
     # Generar una clave simétrica aleatoria
+    remove_expired_keys()
     session_key = get_random_bytes(16)
 
     # Cifrar la clave simétrica con la clave pública

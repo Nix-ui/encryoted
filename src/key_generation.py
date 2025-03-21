@@ -4,13 +4,13 @@ import os
 from datetime import datetime, timedelta
 from dotenv import dotenv_values, set_key
 
-def save_keys_to_env(email, public_key, private_key, zip_name, password_hash, iv_hash_order):
+def save_keys_to_env(email, public_key, private_key, zip_name, password_hash, iv_hash_order,expiration_time):
     """
     Guarda las llaves y metadatos en el archivo .env en el formato correcto.
     """
     # Crear la nueva entrada
-    expiration_keys = (datetime.now() + timedelta(days=1)).isoformat()
-    expiration_file = (datetime.now() + timedelta(days=7)).isoformat()
+    expiration_keys = (datetime.now() + timedelta(minutes=expiration_time)).isoformat()
+    expiration_file = (datetime.now() + timedelta(minutes=expiration_time)).isoformat()
 
     new_entry = {
         "public_key": public_key,
